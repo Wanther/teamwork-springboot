@@ -1,0 +1,44 @@
+spring:
+  application.name: teamwork
+  main.banner-mode: 'off'
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/teamwork?serverTimezone=Asia/Shanghai&nullNamePatternMatchesAll=true&nullCatalogMeansCurrent=true
+    username: teamwork
+    password: abcd,1234!@#$
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 1
+  jpa:
+    open-in-view: true
+    # mapping-resources:
+    #   - teamwork/sys/models/OAuthToken.xml
+    properties:
+      hibernate:
+        check_nullability: false
+        # id.new_generator_mappings: false
+        dialect: org.hibernate.dialect.MySQLDialect
+  data.web.pageable:
+    one-indexed-parameters: true # 从1开始
+    default-page-size: 30
+    max-page-size: 100
+  mvc.hiddenmethod.filter.enabled: false
+  jackson.property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
+  cache.cache-names: c1
+  messages:
+    basename: i18n.messages
+    use-code-as-default-message: true
+    encoding: UTF-8
+
+security:
+  oauth2.resource:
+    id: teamwork
+    token-info-uri: http://localhost:8080/oauth/check_token
+
+logging:
+  level:
+    root: WARN
+
+server:
+  port: 8023
+  error.whitelabel.enabled: false

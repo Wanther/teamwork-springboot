@@ -1,0 +1,33 @@
+spring:
+  http:
+    log-request-details: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/teamwork_lumen?serverTimezone=Asia/Shanghai&nullNamePatternMatchesAll=true&nullCatalogMeansCurrent=true
+    username: root
+    password: ''
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 1
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        # format_sql: true
+
+logging:
+  level:
+    root: WARN
+    teamwork: DEBUG
+    # org.springframework: DEBUG
+    # com.zaxxer.hikari: DEBUG
+    # org.hibernate: DEBUG
+    # org.springframework: DEBUG
+
+# local.server.port: 8082
+
+server:
+  port: 8081
+  undertow:
+    accesslog.enabled: false
+    io-threads: 1
+    worker-threads: 2
