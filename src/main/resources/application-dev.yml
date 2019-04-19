@@ -17,11 +17,11 @@ spring:
 logging:
   level:
     root: WARN
+    # web: DEBUG
     teamwork: DEBUG
-    # org.springframework: DEBUG
+    # org.springframework.security: DEBUG
     # com.zaxxer.hikari: DEBUG
     # org.hibernate: DEBUG
-    # org.springframework: DEBUG
 
 # local.server.port: 8082
 

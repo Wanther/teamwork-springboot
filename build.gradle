@@ -22,8 +22,8 @@ apply plugin: 'org.hibernate.orm'
 group = 'com.eastalliance'
 version = '0.0.1-SNAPSHOT'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = 12
+targetCompatibility = 12
 
 bootRun {
     // ./gradlew bootRun --args='--spring.profiles.active=dev'
@@ -56,6 +56,8 @@ dependencies {
         exclude group: 'io.undertow', module: 'undertow-websockets-jsr'
     }
     implementation('org.springframework.boot:spring-boot-starter-cache')
+
+    implementation('commons-codec:commons-codec:1.12')
 
     runtimeOnly 'mysql:mysql-connector-java'
     runtimeOnly 'org.springframework.boot:spring-boot-devtools'

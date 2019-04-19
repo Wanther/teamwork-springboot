@@ -5,20 +5,24 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.*;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import teamwork.App;
 
+import javax.persistence.PersistenceException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -27,7 +31,7 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
     @Autowired
     private MessageSource messageSource;
 
-    @ExceptionHandler(ValidationException.class)
+    @ExceptionHandler({ValidationException.class, ServiceException.class})
     public final ResponseEntity<Object> handleAppException(Exception ex, WebRequest request) throws Exception {
         if (ex instanceof ConstraintViolationException) {
             return handleConstraintViolationException((ConstraintViolationException) ex, null, request);
@@ -35,6 +39,15 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
         if (ex instanceof ValidationException) {
             return handleValidationException((ValidationException)ex, null, request);
+        }
+
+        if (ex instanceof ServiceException) {
+            return super.handleExceptionInternal(ex, messageSource.getMessage(ex.getMessage(), null, request.getLocale()), null, HttpStatus.EXPECTATION_FAILED, request);
+        }
+
+        if (ex instanceof PersistenceException) {
+            App.LOGGER.error("persistence error:", ex);
+            return super.handleExceptionInternal(ex, messageSource.getMessage("persistenceError", null, request.getLocale()), null, HttpStatus.INTERNAL_SERVER_ERROR, request);
         }
 
         return super.handleException(ex, request);
@@ -68,7 +81,11 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        return super.handleExceptionInternal(ex, Map.of(ex.getParameterName(), Set.of(messageSource.getMessage("required", null, request.getLocale()))), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+        Map<String, String[]> body = new HashMap<>();
+
+        body.put(ex.getParameterName(), new String[] {messageSource.getMessage("required", null, request.getLocale())});
+
+        return super.handleExceptionInternal(ex, body, headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
     }
 
     protected ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex, HttpHeaders headers, WebRequest request) {
@@ -87,6 +104,6 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     protected ResponseEntity<Object> handleValidationException(ValidationException ex, HttpHeaders headers, WebRequest request) {
-        return super.handleExceptionInternal(ex, List.of(ex.getMessage()), null, HttpStatus.BAD_REQUEST, request);
+        return super.handleExceptionInternal(ex, new String[] {ex.getMessage()}, null, HttpStatus.BAD_REQUEST, request);
     }
 }

@@ -1,74 +1,45 @@
 package teamwork.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyGroup;
-import org.springframework.security.core.context.SecurityContextHolder;
-import teamwork.App;
-import teamwork.sys.models.User;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @MappedSuperclass
 public abstract class BaseEntity<PK extends Serializable> implements Serializable {
+
+    public static final Collection<String> SYSTEM_FIELDS = Collections.unmodifiableSet(Set.of("created", "createdBy", "updated", "updatedBy"));
 
     @JsonIgnore
     @Basic(fetch = FetchType.LAZY)
     @Column(updatable = false)
     @LazyGroup("audit")
+    @CreationTimestamp
     private LocalDateTime created;
 
     @JsonIgnore
     @Basic(fetch = FetchType.LAZY)
     @Column(updatable = false)
     @LazyGroup("audit")
+    @CreationUid
     private Long createdBy;
 
     @JsonIgnore
     @Basic(fetch = FetchType.LAZY)
     @LazyGroup("audit")
+    @UpdateTimestamp
     private LocalDateTime updated;
 
     @JsonIgnore
     @Basic(fetch = FetchType.LAZY)
     @LazyGroup("audit")
+    @UpdateUid
     private Long updatedBy;
-
-    @PrePersist
-    public void touchOnCreate() {
-
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Long auditId = getAuditor().map(User::getId)
-                .or(() -> Optional.ofNullable(createdBy))
-                .or(() -> Optional.ofNullable(updatedBy))
-                .orElse(0L);
-
-        if (App.LOGGER.isDebugEnabled()) {
-            App.LOGGER.debug("touchOnCreate {}:{}-{}", getClass(), now, auditId);
-        }
-
-        created = now;
-        createdBy = auditId;
-
-        updated = now;
-        updatedBy = auditId;
-    }
-
-    @PreUpdate
-    public void touchOnUpdate() {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Long auditId = getAuditor().map(User::getId).orElse(0L);
-
-        if (App.LOGGER.isDebugEnabled()) {
-            App.LOGGER.debug("touchOnUpdate {}:{}-{}", getClass(), now, auditId);
-        }
-
-        updated = now;
-        updatedBy = auditId;
-    }
 
     public abstract PK getId();
     public abstract void setId(PK id);
@@ -116,18 +87,5 @@ public abstract class BaseEntity<PK extends Serializable> implements Serializabl
     @Override
     public int hashCode() {
         return Objects.hash(getId());
-    }
-
-    private Optional<User> getAuditor() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return Optional.of((User) principal);
-        }
-
-        if (App.LOGGER.isDebugEnabled()) {
-            App.LOGGER.warn("auditor not found, principal={}", principal);
-        }
-
-        return Optional.empty();
     }
 }

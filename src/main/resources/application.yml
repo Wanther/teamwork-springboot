@@ -10,7 +10,7 @@ spring:
       maximum-pool-size: 30
       minimum-idle: 1
   jpa:
-    open-in-view: true
+    open-in-view: false
     # mapping-resources:
     #   - teamwork/sys/models/OAuthToken.xml
     properties:
@@ -22,7 +22,9 @@ spring:
     one-indexed-parameters: true # 从1开始
     default-page-size: 30
     max-page-size: 100
-  mvc.hiddenmethod.filter.enabled: false
+  mvc:
+    hiddenmethod.filter.enabled: false
+    favicon.enabled: false
   jackson.property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
   cache.cache-names: c1
   messages:
@@ -30,15 +32,10 @@ spring:
     use-code-as-default-message: true
     encoding: UTF-8
 
-security:
-  oauth2.resource:
-    id: teamwork
-    token-info-uri: http://localhost:8080/oauth/check_token
-
 logging:
   level:
     root: WARN
 
 server:
   port: 8023
-  error.whitelabel.enabled: false
+  # error.whitelabel.enabled: false
